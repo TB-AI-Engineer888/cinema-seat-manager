@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cinema Seat Manager</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen py-10 px-4">
+
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold text-slate-800 mb-1">Cinema Seat Manager</h1>
+    <p class="text-sm text-slate-500 mb-6">Click an available (L) seat to reserve your spot.</p>
+
+    <div class="bg-slate-800 text-slate-100 text-center py-2 rounded mb-6 text-sm tracking-widest">SCREEN</div>
+
+    <div id="grid" class="grid gap-1 mb-6" style="grid-template-columns: repeat(11, minmax(0, 1fr));"></div>
+
+    <div class="flex gap-6 text-sm text-slate-600 mb-4">
+      <div class="flex items-center gap-2"><span class="w-5 h-5 bg-emerald-100 border border-emerald-400 rounded"></span> Available</div>
+      <div class="flex items-center gap-2"><span class="w-5 h-5 bg-rose-100 border border-rose-400 rounded"></span> Occupied</div>
+    </div>
+
+    <div id="status" class="text-sm font-medium text-slate-700 mb-2 h-5"></div>
+    <div id="counts" class="text-sm text-slate-500"></div>
+  </div>
+
+<script>
+  function initializeSeats() {
+    const theaterRoom = [];
+    let rows = 0;
+    while (rows < 8) {
+      const rowSeats = [];
+      let seats = 0;
+      while (seats < 10) {
+        rowSeats.push(0);
+        seats += 1;
+      }
+      theaterRoom.push(rowSeats);
+      rows += 1;
+    }
+    return theaterRoom;
+  }
+
+  function reserveSeat(theaterRoom, row, col) {
+    if (theaterRoom[row][col] === 1) {
+      return "Seat already taken";
+    } else {
+      theaterRoom[row][col] = 1;
+      return "Reservation confirmed";
+    }
+  }
+
+  function countSeats(theaterRoom) {
+    let occupied = 0;
+    let available = 0;
+    let rows = 0;
+    while (rows < 8) {
+      let seats = 0;
+      while (seats < 10) {
+        if (theaterRoom[rows][seats] === 1) {
+          occupied += 1;
+        } else {
+          available += 1;
+        }
+        seats += 1;
+      }
+      rows += 1;
+    }
+    return { occupied: occupied, available: available };
+  }
+
+  const theaterRoom = initializeSeats();
+
+  function render() {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    grid.appendChild(document.createElement("div"));
+    for (let col = 0; col < 10; col++) {
+      const label = document.createElement("div");
+      label.textContent = col;
+      label.className = "text-center text-xs text-slate-400";
+      grid.appendChild(label);
+    }
+
+    let rows = 0;
+    while (rows < 8) {
+      const rowLabel = document.createElement("div");
+      rowLabel.textContent = rows;
+      rowLabel.className = "text-center text-xs text-slate-400 flex items-center justify-center";
+      grid.appendChild(rowLabel);
+
+      let seats = 0;
+      while (seats < 10) {
+        const seatValue = theaterRoom[rows][seats];
+        const btn = document.createElement("button");
+        btn.textContent = seatValue === 1 ? "X" : "L";
+        btn.className = seatValue === 1
+          ? "w-8 h-8 rounded bg-rose-100 border border-rose-400 text-rose-700 text-xs font-semibold cursor-not-allowed"
+          : "w-8 h-8 rounded bg-emerald-100 border border-emerald-400 text-emerald-700 text-xs font-semibold hover:bg-emerald-200";
+        btn.disabled = seatValue === 1;
+
+        const r = rows, c = seats;
+        btn.addEventListener("click", () => {
+          const message = reserveSeat(theaterRoom, r, c);
+          document.getElementById("status").textContent = message + " (row " + r + ", column " + c + ")";
+          render();
+        });
+
+        grid.appendChild(btn);
+        seats += 1;
+      }
+      rows += 1;
+    }
+
+    const counts = countSeats(theaterRoom);
+    document.getElementById("counts").textContent =
+      "Occupied: " + counts.occupied + " | Available: " + counts.available;
+  }
+
+  render();
+</script>
+
+</body>
+</html>
